@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/fatedier/frp/models/config"
-	"github.com/fatedier/frp/models/msg"
-	"github.com/fatedier/frp/utils/log"
-	frpNet "github.com/fatedier/frp/utils/net"
+	"github.com/penggy/frp/models/config"
+	"github.com/penggy/frp/models/msg"
+	"github.com/penggy/frp/utils/log"
+	frpNet "github.com/penggy/frp/utils/net"
 
 	"github.com/fatedier/golib/errors"
 )

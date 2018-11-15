@@ -7,7 +7,7 @@ import (
 	"os"
 	"syscall"
 
-	frpNet "github.com/fatedier/frp/utils/net"
+	frpNet "github.com/penggy/frp/utils/net"
 )
 
 func StartTcpEchoServer() {

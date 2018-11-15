@@ -29,11 +29,11 @@ import (
 	"github.com/spf13/cobra"
 	ini "github.com/vaughan0/go-ini"
 
-	"github.com/fatedier/frp/client"
-	"github.com/fatedier/frp/g"
-	"github.com/fatedier/frp/models/config"
-	"github.com/fatedier/frp/utils/log"
-	"github.com/fatedier/frp/utils/version"
+	"github.com/penggy/frp/client"
+	"github.com/penggy/frp/g"
+	"github.com/penggy/frp/models/config"
+	"github.com/penggy/frp/utils/log"
+	"github.com/penggy/frp/utils/version"
 )
 
 const (

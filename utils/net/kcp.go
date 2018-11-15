@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/fatedier/frp/utils/log"
+	"github.com/penggy/frp/utils/log"
 
 	kcp "github.com/fatedier/kcp-go"
 )

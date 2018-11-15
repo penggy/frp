@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/fatedier/frp/cmd/frpc/sub"
+	"github.com/penggy/frp/cmd/frpc/sub"
 
 	"github.com/fatedier/golib/crypto"
 )

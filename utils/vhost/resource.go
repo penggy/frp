@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/fatedier/frp/utils/version"
+	"github.com/penggy/frp/utils/version"
 )
 
 const (

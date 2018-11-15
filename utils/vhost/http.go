@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	frpNet "github.com/fatedier/frp/utils/net"
+	frpNet "github.com/penggy/frp/utils/net"
 
 	gnet "github.com/fatedier/golib/net"
 	"github.com/fatedier/golib/pool"

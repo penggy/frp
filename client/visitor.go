@@ -26,12 +26,12 @@ import (
 
 	"golang.org/x/net/ipv4"
 
-	"github.com/fatedier/frp/g"
-	"github.com/fatedier/frp/models/config"
-	"github.com/fatedier/frp/models/msg"
-	"github.com/fatedier/frp/utils/log"
-	frpNet "github.com/fatedier/frp/utils/net"
-	"github.com/fatedier/frp/utils/util"
+	"github.com/penggy/frp/g"
+	"github.com/penggy/frp/models/config"
+	"github.com/penggy/frp/models/msg"
+	"github.com/penggy/frp/utils/log"
+	frpNet "github.com/penggy/frp/utils/net"
+	"github.com/penggy/frp/utils/util"
 
 	frpIo "github.com/fatedier/golib/io"
 	"github.com/fatedier/golib/pool"

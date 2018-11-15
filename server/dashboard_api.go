@@ -18,11 +18,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/fatedier/frp/g"
-	"github.com/fatedier/frp/models/config"
-	"github.com/fatedier/frp/models/consts"
-	"github.com/fatedier/frp/utils/log"
-	"github.com/fatedier/frp/utils/version"
+	"github.com/penggy/frp/g"
+	"github.com/penggy/frp/models/config"
+	"github.com/penggy/frp/models/consts"
+	"github.com/penggy/frp/utils/log"
+	"github.com/penggy/frp/utils/version"
 
 	"github.com/gorilla/mux"
 )
@@ -177,14 +177,14 @@ func apiProxyByType(w http.ResponseWriter, r *http.Request) {
 	}()
 	log.Info("Http request: [%s]", r.URL.Path)
 
-	res.Proxies = getProxyStatsByType(proxyType)
+	res.Proxies = GetProxyStatsByType(proxyType)
 
 	buf, _ = json.Marshal(&res)
 	w.Write(buf)
 
 }
 
-func getProxyStatsByType(proxyType string) (proxyInfos []*ProxyStatsInfo) {
+func GetProxyStatsByType(proxyType string) (proxyInfos []*ProxyStatsInfo) {
 	proxyStats := StatsGetProxiesByType(proxyType)
 	proxyInfos = make([]*ProxyStatsInfo, 0, len(proxyStats))
 	for _, ps := range proxyStats {

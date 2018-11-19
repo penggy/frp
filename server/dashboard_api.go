@@ -100,6 +100,11 @@ type TcpOutConf struct {
 	RemotePort int `json:"remote_port"`
 }
 
+type RtmpOutConf struct {
+	BaseOutConf
+	RemotePort int `json:"remote_port"`
+}
+
 type UdpOutConf struct {
 	BaseOutConf
 	RemotePort int `json:"remote_port"`
@@ -129,6 +134,8 @@ func getConfByType(proxyType string) interface{} {
 	switch proxyType {
 	case consts.TcpProxy:
 		return &TcpOutConf{}
+	case consts.RtmpProxy:
+		return &RtmpOutConf{}
 	case consts.UdpProxy:
 		return &UdpOutConf{}
 	case consts.HttpProxy:
@@ -146,7 +153,9 @@ func getConfByType(proxyType string) interface{} {
 
 // Get proxy info.
 type ProxyStatsInfo struct {
-	Name            string      `json:"name"`
+	Name            string `json:"name"`
+	HttpUser        string
+	HttpPwd         string
 	Conf            interface{} `json:"conf"`
 	TodayTrafficIn  int64       `json:"today_traffic_in"`
 	TodayTrafficOut int64       `json:"today_traffic_out"`
@@ -205,6 +214,8 @@ func GetProxyStatsByType(proxyType string) (proxyInfos []*ProxyStatsInfo) {
 			proxyInfo.Status = consts.Offline
 		}
 		proxyInfo.Name = ps.Name
+		proxyInfo.HttpUser = ps.HttpUser
+		proxyInfo.HttpPwd = ps.HttpPwd
 		proxyInfo.TodayTrafficIn = ps.TodayTrafficIn
 		proxyInfo.TodayTrafficOut = ps.TodayTrafficOut
 		proxyInfo.CurConns = ps.CurConns

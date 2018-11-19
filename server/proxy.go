@@ -140,6 +140,12 @@ func NewProxy(ctl *Control, pxyConf config.ProxyConf) (pxy Proxy, err error) {
 			BaseProxy: basePxy,
 			cfg:       cfg,
 		}
+	case *config.RtmpProxyConf:
+		basePxy.usedPortsNum = 1
+		pxy = &RtmpProxy{
+			BaseProxy: basePxy,
+			cfg:       cfg,
+		}
 	case *config.HttpProxyConf:
 		pxy = &HttpProxy{
 			BaseProxy: basePxy,
@@ -228,6 +234,67 @@ func (pxy *TcpProxy) GetConf() config.ProxyConf {
 }
 
 func (pxy *TcpProxy) Close() {
+	pxy.BaseProxy.Close()
+	if pxy.cfg.Group == "" {
+		pxy.ctl.svr.tcpPortManager.Release(pxy.realPort)
+	}
+}
+
+type RtmpProxy struct {
+	BaseProxy
+	cfg *config.RtmpProxyConf
+
+	realPort int
+}
+
+func (pxy *RtmpProxy) Run() (remoteAddr string, err error) {
+	if pxy.cfg.Group != "" {
+		l, realPort, errRet := pxy.ctl.svr.tcpGroupCtl.Listen(pxy.name, pxy.cfg.Group, pxy.cfg.GroupKey, g.GlbServerCfg.ProxyBindAddr, pxy.cfg.RemotePort)
+		if errRet != nil {
+			err = errRet
+			return
+		}
+		defer func() {
+			if err != nil {
+				l.Close()
+			}
+		}()
+		pxy.realPort = realPort
+		listener := frpNet.WrapLogListener(l)
+		listener.AddLogPrefix(pxy.name)
+		pxy.listeners = append(pxy.listeners, listener)
+		pxy.Info("rtmp proxy listen port [%d] in group [%s]", pxy.cfg.RemotePort, pxy.cfg.Group)
+	} else {
+		pxy.realPort, err = pxy.ctl.svr.tcpPortManager.Acquire(pxy.name, pxy.cfg.RemotePort)
+		if err != nil {
+			return
+		}
+		defer func() {
+			if err != nil {
+				pxy.ctl.svr.tcpPortManager.Release(pxy.realPort)
+			}
+		}()
+		listener, errRet := frpNet.ListenTcp(g.GlbServerCfg.ProxyBindAddr, pxy.realPort)
+		if errRet != nil {
+			err = errRet
+			return
+		}
+		listener.AddLogPrefix(pxy.name)
+		pxy.listeners = append(pxy.listeners, listener)
+		pxy.Info("rtmp proxy listen port [%d]", pxy.cfg.RemotePort)
+	}
+
+	pxy.cfg.RemotePort = pxy.realPort
+	remoteAddr = fmt.Sprintf(":%d", pxy.realPort)
+	pxy.startListenHandler(pxy, HandleUserTcpConnection)
+	return
+}
+
+func (pxy *RtmpProxy) GetConf() config.ProxyConf {
+	return pxy.cfg
+}
+
+func (pxy *RtmpProxy) Close() {
 	pxy.BaseProxy.Close()
 	if pxy.cfg.Group == "" {
 		pxy.ctl.svr.tcpPortManager.Release(pxy.realPort)

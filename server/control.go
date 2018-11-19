@@ -333,7 +333,7 @@ func (ctl *Control) manager() {
 				} else {
 					resp.RemoteAddr = remoteAddr
 					ctl.conn.Info("new proxy [%s] success", m.ProxyName)
-					StatsNewProxy(m.ProxyName, m.ProxyType)
+					StatsNewProxy(m)
 				}
 				ctl.sendCh <- resp
 			case *msg.CloseProxy:

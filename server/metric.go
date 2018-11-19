@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/penggy/frp/g"
+	"github.com/penggy/frp/models/msg"
 	"github.com/penggy/frp/utils/log"
 	"github.com/penggy/frp/utils/metric"
 )
@@ -50,6 +51,8 @@ type ServerStatistics struct {
 type ProxyStatistics struct {
 	Name          string
 	ProxyType     string
+	HttpUser      string
+	HttpPwd       string
 	TrafficIn     metric.DateCounter
 	TrafficOut    metric.DateCounter
 	CurConns      metric.Counter
@@ -103,27 +106,29 @@ func StatsCloseClient() {
 	}
 }
 
-func StatsNewProxy(name string, proxyType string) {
+func StatsNewProxy(m *msg.NewProxy) {
 	if g.GlbServerCfg.DashboardPort != 0 {
 		globalStats.mu.Lock()
 		defer globalStats.mu.Unlock()
-		counter, ok := globalStats.ProxyTypeCounts[proxyType]
+		counter, ok := globalStats.ProxyTypeCounts[m.ProxyType]
 		if !ok {
 			counter = metric.NewCounter()
 		}
 		counter.Inc(1)
-		globalStats.ProxyTypeCounts[proxyType] = counter
+		globalStats.ProxyTypeCounts[m.ProxyType] = counter
 
-		proxyStats, ok := globalStats.ProxyStatistics[name]
-		if !(ok && proxyStats.ProxyType == proxyType) {
+		proxyStats, ok := globalStats.ProxyStatistics[m.ProxyName]
+		if !(ok && proxyStats.ProxyType == m.ProxyType) {
 			proxyStats = &ProxyStatistics{
-				Name:       name,
-				ProxyType:  proxyType,
+				Name:       m.ProxyName,
+				ProxyType:  m.ProxyType,
+				HttpUser:   m.HttpUser,
+				HttpPwd:    m.HttpPwd,
 				CurConns:   metric.NewCounter(),
 				TrafficIn:  metric.NewDateCounter(ReserveDays),
 				TrafficOut: metric.NewDateCounter(ReserveDays),
 			}
-			globalStats.ProxyStatistics[name] = proxyStats
+			globalStats.ProxyStatistics[m.ProxyName] = proxyStats
 		}
 		proxyStats.LastStartTime = time.Now()
 	}
@@ -228,6 +233,8 @@ func StatsGetServer() *ServerStats {
 type ProxyStats struct {
 	Name            string
 	Type            string
+	HttpUser        string
+	HttpPwd         string
 	TodayTrafficIn  int64
 	TodayTrafficOut int64
 	LastStartTime   string
@@ -247,6 +254,8 @@ func StatsGetProxiesByType(proxyType string) []*ProxyStats {
 
 		ps := &ProxyStats{
 			Name:            name,
+			HttpUser:        proxyStats.HttpUser,
+			HttpPwd:         proxyStats.HttpPwd,
 			Type:            proxyStats.ProxyType,
 			TodayTrafficIn:  proxyStats.TrafficIn.TodayCount(),
 			TodayTrafficOut: proxyStats.TrafficOut.TodayCount(),

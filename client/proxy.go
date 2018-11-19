@@ -56,6 +56,11 @@ func NewProxy(pxyConf config.ProxyConf) (pxy Proxy) {
 			BaseProxy: baseProxy,
 			cfg:       cfg,
 		}
+	case *config.RtmpProxyConf:
+		pxy = &RtmpProxy{
+			BaseProxy: baseProxy,
+			cfg:       cfg,
+		}
 	case *config.UdpProxyConf:
 		pxy = &UdpProxy{
 			BaseProxy: baseProxy,
@@ -116,6 +121,35 @@ func (pxy *TcpProxy) Close() {
 }
 
 func (pxy *TcpProxy) InWorkConn(conn frpNet.Conn) {
+	HandleTcpWorkConnection(&pxy.cfg.LocalSvrConf, pxy.proxyPlugin, &pxy.cfg.BaseProxyConf, conn,
+		[]byte(g.GlbClientCfg.Token))
+}
+
+// RTMP
+type RtmpProxy struct {
+	BaseProxy
+
+	cfg         *config.RtmpProxyConf
+	proxyPlugin plugin.Plugin
+}
+
+func (pxy *RtmpProxy) Run() (err error) {
+	if pxy.cfg.Plugin != "" {
+		pxy.proxyPlugin, err = plugin.Create(pxy.cfg.Plugin, pxy.cfg.PluginParams)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (pxy *RtmpProxy) Close() {
+	if pxy.proxyPlugin != nil {
+		pxy.proxyPlugin.Close()
+	}
+}
+
+func (pxy *RtmpProxy) InWorkConn(conn frpNet.Conn) {
 	HandleTcpWorkConnection(&pxy.cfg.LocalSvrConf, pxy.proxyPlugin, &pxy.cfg.BaseProxyConf, conn,
 		[]byte(g.GlbClientCfg.Token))
 }

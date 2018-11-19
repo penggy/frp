@@ -382,3 +382,16 @@ func (svr *Service) RegisterProxy(name string, pxy Proxy) error {
 func (svr *Service) DelProxy(name string) {
 	svr.pxyManager.Del(name)
 }
+
+func (svr *Service) Stop() (err error) {
+	if svr.listener != nil {
+		svr.listener.Close()
+	}
+	if svr.kcpListener != nil {
+		svr.kcpListener.Close()
+	}
+	if svr.websocketListener != nil {
+		svr.websocketListener.Close()
+	}
+	return
+}

@@ -39,6 +39,7 @@ func init() {
 	proxyConfTypeMap[consts.HttpsProxy] = reflect.TypeOf(HttpsProxyConf{})
 	proxyConfTypeMap[consts.StcpProxy] = reflect.TypeOf(StcpProxyConf{})
 	proxyConfTypeMap[consts.XtcpProxy] = reflect.TypeOf(XtcpProxyConf{})
+	proxyConfTypeMap[consts.RtmpProxy] = reflect.TypeOf(RtmpProxyConf{})
 }
 
 // NewConfByType creates a empty ProxyConf object by proxyType.
@@ -99,6 +100,8 @@ func NewProxyConfFromIni(prefix string, name string, section ini.Section) (cfg P
 type BaseProxyConf struct {
 	ProxyName string `json:"proxy_name"`
 	ProxyType string `json:"proxy_type"`
+	HttpUser  string `json:"http_user"`
+	HttpPwd   string `json:"-"`
 
 	UseEncryption  bool   `json:"use_encryption"`
 	UseCompression bool   `json:"use_compression"`
@@ -125,6 +128,8 @@ func (cfg *BaseProxyConf) compare(cmp *BaseProxyConf) bool {
 func (cfg *BaseProxyConf) UnmarshalFromMsg(pMsg *msg.NewProxy) {
 	cfg.ProxyName = pMsg.ProxyName
 	cfg.ProxyType = pMsg.ProxyType
+	cfg.HttpUser = pMsg.HttpUser
+	cfg.HttpPwd = pMsg.HttpPwd
 	cfg.UseEncryption = pMsg.UseEncryption
 	cfg.UseCompression = pMsg.UseCompression
 	cfg.Group = pMsg.Group
@@ -138,6 +143,16 @@ func (cfg *BaseProxyConf) UnmarshalFromIni(prefix string, name string, section i
 	)
 	cfg.ProxyName = prefix + name
 	cfg.ProxyType = section["type"]
+
+	tmpStr, ok = section["http_user"]
+	if ok && tmpStr != "" {
+		cfg.HttpUser = tmpStr
+	}
+
+	tmpStr, ok = section["http_pwd"]
+	if ok && tmpStr != "" {
+		cfg.HttpPwd = tmpStr
+	}
 
 	tmpStr, ok = section["use_encryption"]
 	if ok && tmpStr == "true" {
@@ -157,6 +172,8 @@ func (cfg *BaseProxyConf) UnmarshalFromIni(prefix string, name string, section i
 func (cfg *BaseProxyConf) MarshalToMsg(pMsg *msg.NewProxy) {
 	pMsg.ProxyName = cfg.ProxyName
 	pMsg.ProxyType = cfg.ProxyType
+	pMsg.HttpUser = cfg.HttpUser
+	pMsg.HttpPwd = cfg.HttpPwd
 	pMsg.UseEncryption = cfg.UseEncryption
 	pMsg.UseCompression = cfg.UseCompression
 	pMsg.Group = cfg.Group
@@ -383,6 +400,55 @@ func (cfg *TcpProxyConf) MarshalToMsg(pMsg *msg.NewProxy) {
 func (cfg *TcpProxyConf) CheckForCli() error { return nil }
 
 func (cfg *TcpProxyConf) CheckForSvr() error { return nil }
+
+// RTMP
+type RtmpProxyConf struct {
+	BaseProxyConf
+	BindInfoConf
+
+	LocalSvrConf
+}
+
+func (cfg *RtmpProxyConf) Compare(cmp ProxyConf) bool {
+	cmpConf, ok := cmp.(*TcpProxyConf)
+	if !ok {
+		return false
+	}
+
+	if !cfg.BaseProxyConf.compare(&cmpConf.BaseProxyConf) ||
+		!cfg.BindInfoConf.compare(&cmpConf.BindInfoConf) ||
+		!cfg.LocalSvrConf.compare(&cmpConf.LocalSvrConf) {
+		return false
+	}
+	return true
+}
+
+func (cfg *RtmpProxyConf) UnmarshalFromMsg(pMsg *msg.NewProxy) {
+	cfg.BaseProxyConf.UnmarshalFromMsg(pMsg)
+	cfg.BindInfoConf.UnmarshalFromMsg(pMsg)
+}
+
+func (cfg *RtmpProxyConf) UnmarshalFromIni(prefix string, name string, section ini.Section) (err error) {
+	if err = cfg.BaseProxyConf.UnmarshalFromIni(prefix, name, section); err != nil {
+		return
+	}
+	if err = cfg.BindInfoConf.UnmarshalFromIni(prefix, name, section); err != nil {
+		return
+	}
+	if err = cfg.LocalSvrConf.UnmarshalFromIni(prefix, name, section); err != nil {
+		return
+	}
+	return
+}
+
+func (cfg *RtmpProxyConf) MarshalToMsg(pMsg *msg.NewProxy) {
+	cfg.BaseProxyConf.MarshalToMsg(pMsg)
+	cfg.BindInfoConf.MarshalToMsg(pMsg)
+}
+
+func (cfg *RtmpProxyConf) CheckForCli() error { return nil }
+
+func (cfg *RtmpProxyConf) CheckForSvr() error { return nil }
 
 // UDP
 type UdpProxyConf struct {

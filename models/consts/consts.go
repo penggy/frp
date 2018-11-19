@@ -29,4 +29,5 @@ var (
 	HttpsProxy string = "https"
 	StcpProxy  string = "stcp"
 	XtcpProxy  string = "xtcp"
+	RtmpProxy  string = "rtmp"
 )
